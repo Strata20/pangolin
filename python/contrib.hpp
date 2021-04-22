@@ -120,6 +120,21 @@ void DrawCamera(py::array_t<double> camera, float w=1.0, float h_ratio=0.75, flo
     glVertex3f(-w,-h,z);
     glVertex3f(w,-h,z);
     glEnd();
+    
+    glBegin(GL_QUADS);
+        
+    glVertex3f(w,h,z);
+    glVertex3f(w,-h,z);
+
+    glVertex3f(-w,h,z);
+    glVertex3f(-w,-h,z);
+
+    glVertex3f(-w,h,z);
+    glVertex3f(w,h,z);
+
+    glVertex3f(-w,-h,z);
+    glVertex3f(w,-h,z);
+    glEnd();
 
     glPopMatrix();
 }
