@@ -21,7 +21,25 @@ void DrawPoints(py::array_t<double> points) {
     }
     glEnd();
 }
+GLuint texture;
 
+GLuint glInitTexture(char* filename)
+{
+    FILE* f = NULL;
+    f = fopen(filename, "r");
+        if(f == NULL)
+        {
+            fprintf(stderr, "cannot load file %s!", filename);
+            exit(1);
+        }
+    GLuint t = SOIL_load_OGL_texture(filename, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_MIPMAPS);
+
+    glBindTexture(GL_TEXTURE_2D, t);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+    return t;
+}
 void DrawPoints(py::array_t<double> points, py::array_t<double> colors) {
     auto r = points.unchecked<2>();
     auto rc = colors.unchecked<2>();
@@ -35,17 +53,25 @@ void DrawPoints(py::array_t<double> points, py::array_t<double> colors) {
 }
 
 
-void DrawCameras(py::array_t<double> cameras, float w=1.0, float h_ratio=0.75, float z_ratio=0.6) {
+void DrawCameras(py::array_t<double> cameras, float w=1.0, float h_ratio=0.75, float z_ratio=0.6, filenameo) {
     auto r = cameras.unchecked<3>();
 
     float h = w * h_ratio;
     float z = w * z_ratio;
 
     for (ssize_t i = 0; i < r.shape(0); ++i) {
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_TEXTURE_2D);
+
+        texture = glInitTexture(filenameo);
+        
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
         glPushMatrix();
         // glMultMatrixd(r.data(i, 0, 0));
         glMultTransposeMatrixd(r.data(i, 0, 0));
-
+        
         glBegin(GL_LINES);
         glVertex3f(0,0,0);
         glVertex3f(w,h,z);
@@ -68,7 +94,7 @@ void DrawCameras(py::array_t<double> cameras, float w=1.0, float h_ratio=0.75, f
         glVertex3f(-w,-h,z);
         glVertex3f(w,-h,z);
         glEnd();
-        
+        glBindTexture(GL_TEXTURE_2D, file);
         glBegin(GL_QUADS);
         
         glVertex3f(w,h,z);
@@ -120,7 +146,7 @@ void DrawCamera(py::array_t<double> camera, float w=1.0, float h_ratio=0.75, flo
     glVertex3f(-w,-h,z);
     glVertex3f(w,-h,z);
     glEnd();
-    
+    glBindTexture(GL_TEXTURE_2D, file);
     glBegin(GL_QUADS);
         
     glVertex3f(w,h,z);
